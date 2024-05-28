@@ -1,24 +1,35 @@
 import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './src/counter'
+import * as THREE from 'three'
+import { Controls, Lighting, LoadModel, setupThreeScene } from './src/Scene'
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+const app = document.querySelector('#app')
 
-setupCounter(document.querySelector('#counter'))
+const { scene, camera, renderer, css3DRenderer } = setupThreeScene(app)
+
+const controls = Controls(camera, renderer)
+
+Lighting(scene)
+
+const model = LoadModel(scene)
+
+const clock = new THREE.Clock(true)
+
+camera.position.set(0,2,6)
+
+// Render loop
+function animate() {
+  requestAnimationFrame(animate)
+
+  var delta = clock.getDelta()
+
+  controls.update()
+
+  if (model) {
+    model.updateMixer(delta)
+  }
+
+  renderer.render(scene, camera)
+  css3DRenderer.render(scene, camera);
+}
+
+animate()
