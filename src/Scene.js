@@ -4,6 +4,7 @@ import { CSS3DRenderer } from 'three/examples/jsm/Addons.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { AnimationMixer, AnimationClip } from 'three'
 import glb from '../assets/mi.glb?url'
+import Html from './Html'
 
 export function setupThreeScene(element) {
   const scene = new THREE.Scene()
@@ -19,6 +20,8 @@ export function setupThreeScene(element) {
     const width = element.clientWidth
     const height = element.clientHeight
     renderer.setSize(width, height)
+    //camera.aspect = width / height
+    //console.log(camera)
   }
   resizeRenderer()
   window.addEventListener("resize", resizeRenderer)
@@ -42,7 +45,7 @@ export function setupThreeScene(element) {
 }
 
 export function Lighting(scene) {
-  const ambientLight = new THREE.AmbientLight(0xcccccc, 0.2)
+  const ambientLight = new THREE.AmbientLight(0xcccccc, 0.4)
   scene.add(ambientLight)
 
   const directionalLight = new THREE.DirectionalLight(0xffffff, 0.99)
@@ -53,10 +56,10 @@ export function Lighting(scene) {
 
 export function Controls(camera, renderer) {
   const controls = new OrbitControls(camera, renderer.domElement)
-  controls.target.set(0, 2, 5.9)
+  controls.target.set(0, 7, 0)
   controls.update()
-  controls.minPolarAngle = Math.PI / 2
-  controls.maxPolarAngle = Math.PI / 2
+  //controls.minPolarAngle = Math.PI / 2
+  //controls.maxPolarAngle = Math.PI / 2
 
   return controls
 }
@@ -67,9 +70,12 @@ export function LoadModel(scene) {
   let animations
   let lastAnim
 
+  let agent
+  let html
+
   const loader = new GLTFLoader()
   loader.load(glb, function (gltf) {
-    //console.log(gltf)
+    console.log(gltf)
     model = gltf.scene
     scene.add(model)
 
@@ -78,6 +84,38 @@ export function LoadModel(scene) {
     playAnimationByName("start")
 
     initializeAnimations()
+
+    scene.children.forEach( child => {
+      if (child.type == "Mesh") {
+        child.frustumCulled = false
+      } else if (child.type == "Group") {
+        child.children.forEach( grandchild => {
+          grandchild.frustumCulled = false
+        })
+      }
+    })
+
+    // Set raycast layers
+    model.traverse( child => {
+      child.layers.set(0)
+    })
+
+    agent = scene.getObjectByName("Adam")
+    agent.layers.set(1)
+
+    agent.children.forEach(child => {
+      child.frustumCulled = false
+      child.layers.set(1)
+    })
+
+    scene.getObjectByName("rope").frustumCulled = false
+
+    scene.getObjectByName("Monitor").children.forEach(child => {
+      if (child.material.name == "screen") {
+        child.layers.set(1)
+        html = Html(child)
+      }
+    })
   })
 
   const playAnimationByName = (animationName) => {
@@ -97,19 +135,27 @@ export function LoadModel(scene) {
   }
 
   const initializeAnimations = () => {
-    //const action = mixer.clipAction(THREE.AnimationClip.findByName(animations, "mumWave"))
-    //action.loop = THREE.LoopOnce
-    //action.clampWhenFinished = true
+    const oneShots = ["drop"]
+    oneShots.forEach( shot => {
+      const action = mixer.clipAction(THREE.AnimationClip.findByName(animations, shot))
+      action.loop = THREE.LoopOnce
+      action.clampWhenFinished = true
+    })
     
     mixer.addEventListener('finished', () => {
       //console.log("Animation finished", lastAnim)
-      if (lastAnim._clip.name == "mumWave") playAnimationByName("Idle");
-    });
+      if (lastAnim._clip.name == "drop") playAnimationByName("idle")
+    })
   }
 
   const updateMixer = (delta) => {
     if (!mixer) return
     mixer.update(delta)
+    
+    if (!agent) return
+    agent.children.forEach( child => {
+      child.geometry.computeBoundingBox()
+    })
   }
 
   const getModel = () => {
@@ -117,8 +163,27 @@ export function LoadModel(scene) {
     return model
   }
 
-  return { getModel, updateMixer, playAnimationByName }
+  return { html, getModel, updateMixer, playAnimationByName }
 
+}
+
+export function moveCamera(camera, targetPosition, alpha) {
+  camera.position.lerp(targetPosition, alpha)
+  if (camera.position.distanceTo(targetPosition) < alpha * 2) return true
+  return false
+}
+
+export function rotateCamera(camera, targetQuaternion, alpha) {
+  camera.quaternion.slerp(targetQuaternion, alpha)
+  if (camera.quaternion.angleTo(targetQuaternion) < alpha) return true
+  return false
+}
+
+export function targetControls(controls, targetPosition, alpha) {
+  //console.log(controls)
+  controls.target.lerp(targetPosition, alpha)
+  if (controls.target.distanceTo(targetPosition) < alpha * 2) return true
+  return false
 }
 
 const getNodebyName = (node, name) => {
