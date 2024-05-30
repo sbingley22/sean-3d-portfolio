@@ -2,6 +2,7 @@ import './style.css'
 import * as THREE from 'three'
 import { Controls, Lighting, LoadModel, moveCamera, rotateCamera, setupThreeScene, targetControls } from './src/Scene'
 import InfoBox from './src/InfoBox'
+import Briefing from './src/Briefing'
 
 const app = document.querySelector('#app')
 
@@ -48,6 +49,9 @@ controls.enableZoom = false
 controls.minPolarAngle = Math.PI * 2 / 4
 controls.maxPolarAngle = Math.PI * 3 / 4
 
+const bgm = document.querySelector('#bgm')
+Briefing(app, bgm)
+
 // Click raycasters
 const raycastClick = (event) => {
   const raycaster = new THREE.Raycaster()
@@ -93,6 +97,10 @@ const raycastClick = (event) => {
       if (stage == "idle") {
         model.playAnimationByName("computer")
         stage = "computer"
+        setTimeout(()=>{
+          model.getHtml().visible = true
+          infoBox.newText("Click and drag outside the monitor to look around.")
+        }, 2000)
 
         camMoving = true
         camTargeting = true

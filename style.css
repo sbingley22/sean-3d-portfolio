@@ -63,6 +63,29 @@ h1 {
   border-radius: 25%;
 }
 
+.briefing-box {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  border: 2px rgb(1, 255, 1) solid;
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+  border-radius: 0%;
+  background-color: black;
+  color: rgb(0, 255, 0);
+}
+
+.briefing-text {
+  border-bottom: 2px rgb(1, 255, 1) solid;
+  padding: 15px;
+  margin: 20px;
+  border-radius: 0%;
+}
+
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;

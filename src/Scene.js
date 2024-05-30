@@ -114,6 +114,7 @@ export function LoadModel(scene) {
       if (child.material.name == "screen") {
         child.layers.set(1)
         html = Html(child)
+        html.visible = false
       }
     })
   })
@@ -152,10 +153,10 @@ export function LoadModel(scene) {
     if (!mixer) return
     mixer.update(delta)
     
-    if (!agent) return
-    agent.children.forEach( child => {
-      child.geometry.computeBoundingBox()
-    })
+    // if (!agent) return
+    // agent.children.forEach( child => {
+    //   child.geometry.computeBoundingBox()
+    // })
   }
 
   const getModel = () => {
@@ -163,7 +164,12 @@ export function LoadModel(scene) {
     return model
   }
 
-  return { html, getModel, updateMixer, playAnimationByName }
+  const getHtml = () => {
+    if (!html) return
+    return html
+  }
+
+  return { getHtml, getModel, updateMixer, playAnimationByName }
 
 }
 

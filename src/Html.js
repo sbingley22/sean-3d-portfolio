@@ -5,8 +5,6 @@ export default function Html(object) {
   container.style.width = '760px'
   container.style.height = '480px'
   container.style.background = 'rgba(211, 211, 200, 1)'
-  //container.style.display = "grid !important"
-  //container.style.gridTemplateRows = "9fr 1fr"
   //container.style.pointerEvents = 'none'
   //container.style.userSelect = 'none'
 
@@ -14,35 +12,90 @@ export default function Html(object) {
 
   const taskBar = document.createElement('div')
   taskBar.style.backgroundColor = "#9988DD"
+  taskBar.style.borderBottom = "4px solid black"
 
   const desktopButton = document.createElement('button')
   desktopButton.style.padding = "0 10px"
   desktopButton.style.margin = "0 10px"
   desktopButton.textContent = "Desktop"
+  desktopButton.onclick = () => goToPage("desktop")
 
   const profileButton = document.createElement('button')
   profileButton.style.padding = "0 10px"
   profileButton.style.margin = "0 10px"
   profileButton.textContent = "Profile"
+  profileButton.onclick = () => goToPage("profile")
+
+  const emailButton = document.createElement('button')
+  emailButton.style.padding = "0 10px"
+  emailButton.style.margin = "0 10px"
+  emailButton.textContent = "Email"
+  emailButton.onclick = () => goToPage("email")
+
+  const contactButton = document.createElement('button')
+  contactButton.style.padding = "0 10px"
+  contactButton.style.margin = "0 10px"
+  contactButton.textContent = "Contact"
+  contactButton.onclick = () => goToPage("contact")
 
   taskBar.appendChild(desktopButton)
   taskBar.appendChild(profileButton)
+  taskBar.appendChild(emailButton)
+  taskBar.appendChild(contactButton)
   container.appendChild(taskBar)
   container.appendChild(mainDiv)
+
+  function removeAllChildren(element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild)
+    }
+  }
+
+  function goToPage(page) {
+    removeAllChildren(mainDiv)
+
+    if (page == "desktop") desktopPage(mainDiv)
+    else if (page == "profile") profilePage(mainDiv)
+  }
+
+  const profilePage = (element) => {
+    const profile = document.createElement('div')
+    profile.style.margin = "10% 35%"
+    profile.style.textAlign = "center"
+    profile.style.color = "black"
+
+    const h1 = document.createElement('h1')
+    h1.textContent = "Sean Bingley"
+
+    profile.appendChild(h1)
+
+    element.appendChild(profile)
+  }
 
   const desktopPage = (element) => {
     const desktop = document.createElement('div')
     desktop.style.margin = "10% 25%"
     desktop.style.textAlign = "left"
+    desktop.style.display = "grid"
+    desktop.style.gridTemplateColumns = "1fr 1fr"
 
-    const shortcuts = ["profile", "emails"]
+    const shortcuts = ["profile", "email", "contact"]
 
     shortcuts.forEach(shortcut => {
       const shortcutContainer = document.createElement('div')
-      const shortcutButton = document.createElement('button')
-      const shortcutIcon = document.createElement('img')
-      const shortcutText = document.createElement('p')
+      shortcutContainer.style.textAlign = "center"
+      shortcutContainer.style.color = "black"
 
+      const shortcutButton = document.createElement
+      ('button')
+      shortcutButton.onclick = () => goToPage(shortcut)
+
+      const shortcutIcon = document.createElement('img')
+      shortcutIcon.src = `./${shortcut}.jpg`
+      shortcutIcon.style.width = "32px"
+      shortcutIcon.style.height = "32px"
+
+      const shortcutText = document.createElement('p')
       shortcutText.textContent = shortcut
 
       shortcutButton.appendChild(shortcutIcon)
