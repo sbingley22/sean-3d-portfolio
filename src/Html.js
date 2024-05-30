@@ -60,14 +60,48 @@ export default function Html(object) {
 
   const profilePage = (element) => {
     const profile = document.createElement('div')
-    profile.style.margin = "10% 35%"
+    profile.style.margin = "1% 15%"
     profile.style.textAlign = "center"
     profile.style.color = "black"
+    profile.style.overflow = "auto"
+    profile.style.height = "50vh"
+    profile.style.padding = "0 5%"
+    profile.style.borderLeft = "2px solid black"
 
     const h1 = document.createElement('h1')
     h1.textContent = "Sean Bingley"
-
     profile.appendChild(h1)
+
+    const img = document.createElement('img')
+    img.src = "./profile.jpg"
+    img.style.width = "100px"
+    img.style.float = "left"
+    img.style.borderRadius = "40%"
+    img.style.border = "2px black solid"
+    profile.appendChild(img)
+
+    const text = [
+      "Hi, I'm Sean Bingley.",
+      "I have studies computer science at Sheffield Hallam University where I completed BSc degree in games software development.",
+      "Since then I have completed the Odin Project and started working on web development projects of my own.",
+      "I am currently focusing in using threejs and react three fiber to make interesting 3D interactable websites",
+      "If you would like something similar contact me on upwork or using the contact form."
+    ]  
+    text.forEach( t => {
+      const p = document.createElement("p")
+      p.style.padding = "5px"
+      p.textContent = t
+  
+      profile.appendChild(p)
+    })
+
+    const link = document.createElement('a')
+    link.style.marginBottom = "0px"
+    link.style.paddingBottom = "40px"
+    link.href = "https://www.upwork.com/freelancers/~0191f4d25049fefef4?referrer_url_path=%2Fnx%2Fsearch%2Ftalent%2Fdetails%2F~0191f4d25049fefef4%2Fprofile"
+    link.textContent = "My Upwork Profile"
+    link.target = "_blank"
+    profile.appendChild(link)
 
     element.appendChild(profile)
   }

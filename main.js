@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import { Controls, Lighting, LoadModel, moveCamera, rotateCamera, setupThreeScene, targetControls } from './src/Scene'
 import InfoBox from './src/InfoBox'
 import Briefing from './src/Briefing'
+import Mute from './src/Mute'
+import Return from './src/Return'
 
 const app = document.querySelector('#app')
 
@@ -51,6 +53,9 @@ controls.maxPolarAngle = Math.PI * 3 / 4
 
 const bgm = document.querySelector('#bgm')
 Briefing(app, bgm)
+
+const muted = Mute(app)
+const returnButton = Return(app)
 
 // Click raycasters
 const raycastClick = (event) => {
@@ -102,6 +107,8 @@ const raycastClick = (event) => {
           infoBox.newText("Click and drag outside the monitor to look around.")
         }, 2000)
 
+        returnButton.showReturn()
+
         camMoving = true
         camTargeting = true
         camMovePos.set(0, 1.3, 0)
@@ -143,40 +150,26 @@ function animate() {
     model.updateMixer(delta)
   }
 
+  if (returnButton && returnButton.getReturnFlag()) {
+    // Return to idle
+    returnButton.setReturnFlag(false)
+
+    model.getHtml().visible = false
+    model.playAnimationByName("idle")
+    stage = "idle"
+
+    camMoving = true
+    camTargeting = true
+    camMovePos.set(1.5, 2, 1.5)
+    camMoveTarget.set(0, 1, 0)
+    
+    controls.enableRotate = false
+    controls.minPolarAngle = Math.PI * 1 / 4
+    controls.maxPolarAngle = Math.PI * 2.2 / 4
+  }
+
   renderer.render(scene, camera)
   css3DRenderer.render(scene, camera)
-
-  /* const raycasting = () => {
-    const raycaster = new THREE.Raycaster()
-    const mouse = new THREE.Vector2()
-  
-    const canvasBounds = renderer.domElement.getBoundingClientRect()
-    mouse.x = ((app.clientX - canvasBounds.left) / canvasBounds.width) * 2 - 1
-    mouse.y = -((app.clientY - canvasBounds.top) / canvasBounds.height) * 2 + 1
-  
-    raycaster.setFromCamera(mouse, camera)
-  
-    raycaster.layers.set(1)
-  
-    const intersects = raycaster.intersectObjects(scene.children, true)
-  
-    //console.log(intersects)
-    if (intersects.length > 0) {
-      const iObject = intersects[0].object
-      const iParent = iObject.parent
-      console.log("object: ", iObject.name)
-      console.log("parent: ", iParent.name)
-  
-      if (iParent.name == "Adam") {
-        if (stage == "start") {
-          infoBox.newText("His file should be on that computer.")
-          model.playAnimationByName("drop")
-        }
-      }
-    }
-  }
-  raycasting() */
-
 }
 
 animate()
