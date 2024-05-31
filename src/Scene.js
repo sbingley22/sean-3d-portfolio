@@ -72,7 +72,9 @@ export function LoadModel(scene, infoBox) {
 
   let agent
   let html
+  let safeDoor
   let safeButtons = []
+  let doom
 
   const loader = new GLTFLoader()
   loader.load(glb, function (gltf) {
@@ -115,11 +117,12 @@ export function LoadModel(scene, infoBox) {
       if (child.material.name == "screen") {
         child.layers.set(1)
         html = Html(child, infoBox)
-        html.visible = false
+        html.cssObject.visible = false
       }
     })
 
-    scene.getObjectByName("SafeDoor").layers.set(1)
+    safeDoor = scene.getObjectByName("SafeDoor")
+    safeDoor.layers.set(1)
 
     scene.getObjectByName("Keypad").children.forEach( (button) => {
       if (button.name.includes("SafeButton00")) {
@@ -127,6 +130,13 @@ export function LoadModel(scene, infoBox) {
         button.layers.set(1)
       }
     } )
+
+    doom = scene.getObjectByName("Doom")
+    doom.layers.set(1)
+    const doomScale = 0.75
+    doom.scale.x *= doomScale
+    doom.scale.y *= doomScale
+    doom.scale.z *= doomScale
   })
 
   const playAnimationByName = (animationName) => {
@@ -163,11 +173,6 @@ export function LoadModel(scene, infoBox) {
   const updateMixer = (delta) => {
     if (!mixer) return
     mixer.update(delta)
-    
-    // if (!agent) return
-    // agent.children.forEach( child => {
-    //   child.geometry.computeBoundingBox()
-    // })
   }
 
   const getModel = () => {
@@ -188,7 +193,13 @@ export function LoadModel(scene, infoBox) {
     })
   }
 
-  return { getHtml, getModel, updateMixer, playAnimationByName, updateSafeButtons }
+  const getSafeDoor = () => {
+    if (!safeDoor) return
+
+    return safeDoor
+  }
+
+  return { getHtml, getModel, getSafeDoor, updateMixer, playAnimationByName, updateSafeButtons }
 }
 
 export function moveCamera(camera, targetPosition, alpha) {

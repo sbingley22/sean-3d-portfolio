@@ -2,6 +2,8 @@ import { CSS3DObject } from "three/examples/jsm/Addons.js"
 import { element } from "three/examples/jsm/nodes/Nodes.js"
 
 export default function Html(object, infoBox) {
+  let doomCopy = false
+
   const container = document.createElement('div')
   container.style.width = '760px'
   container.style.height = '480px'
@@ -59,6 +61,36 @@ export default function Html(object, infoBox) {
     else if (page == "profile") profilePage(mainDiv)
     else if (page == "email") emailPage(mainDiv)
     else if (page == "contact") contactPage(mainDiv)
+    else if (page == "doom") doomPage(mainDiv)
+  }
+
+  const muteAll = (muted) => {
+    const audioElements = document.querySelectorAll('audio')
+    audioElements.forEach(audio => {
+      if (!muted) {
+        audio.play()
+      } else {
+        audio.pause()
+      }
+    })
+  }
+
+  const doomPage = (element) => {
+    muteAll(true)
+
+    const doomContainer = document.createElement('div')
+    doomContainer.id = 'dosbox' // Set an ID for the container
+    element.appendChild(doomContainer)
+
+    var dosbox = new Dosbox({
+      id: "dosbox",
+      onload: function (dosbox) {
+        dosbox.run("./DOOM-@evilution.zip", "./DOOM/DOOM.EXE")
+      },
+      onrun: function (dosbox, app) {
+        console.log("App '" + app + "' is runned")
+      }
+    })
   }
 
   const contactPage = (element) => {
@@ -200,7 +232,7 @@ export default function Html(object, infoBox) {
 
       if (message.img) {
         const img = document.createElement('img')
-        img.src = "./profile.jpg"
+        img.src = message.img
         img.style.width = "160px"
         img.style.borderRadius = "0%"
         img.style.border = "2px black solid"
@@ -278,7 +310,7 @@ export default function Html(object, infoBox) {
     desktop.style.display = "grid"
     desktop.style.gridTemplateColumns = "1fr 1fr"
 
-    const shortcuts = ["profile", "email", "contact"]
+    const shortcuts = ["profile", "email", "contact", "doom"]
 
     shortcuts.forEach(shortcut => {
       const shortcutContainer = document.createElement('div')
@@ -301,7 +333,11 @@ export default function Html(object, infoBox) {
       shortcutContainer.appendChild(shortcutButton)
       shortcutContainer.appendChild(shortcutText)
 
-      desktop.appendChild(shortcutContainer)
+      if (shortcut == "doom") {
+        console.log(doomCopy)
+        if (doomCopy) desktop.appendChild(shortcutContainer)
+      }
+      else desktop.appendChild(shortcutContainer)
     })
 
     element.appendChild(desktop)
@@ -318,5 +354,10 @@ export default function Html(object, infoBox) {
 
   object.add(cssObject)
 
-  return cssObject
+  const setDoomCopy = (haveCopy) => {
+    doomCopy = haveCopy
+    goToPage("desktop")
+  }
+
+  return { cssObject, setDoomCopy, goToPage }
 }

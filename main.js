@@ -52,11 +52,13 @@ controls.minPolarAngle = Math.PI * 2 / 4
 controls.maxPolarAngle = Math.PI * 3 / 4
 
 const bgm = document.querySelector('#bgm')
+bgm.volume = 0.5
 Briefing(app, bgm)
 
 const muted = Mute(app)
 const returnButton = Return(app)
 
+let safeDoorOpen = false
 const safeButtons = [false,false,false,false,false,false,false,false,false]
 
 const updateSafeButtons = (button) => {
@@ -67,7 +69,11 @@ const updateSafeButtons = (button) => {
 
   const correctCombination = [true, false, true, false, true, true, false, false, true]
   if (arraysEqual(correctCombination, safeButtons)) {
-    console.log("Safe Open")
+    //console.log("Safe Open")
+    safeDoorOpen = true
+    setTimeout(()=>{
+      safeDoorOpen = false
+    }, 2000)
   }
 }
 
@@ -123,7 +129,7 @@ const raycastClick = (event) => {
         model.playAnimationByName("computer")
         stage = "computer"
         setTimeout(()=>{
-          model.getHtml().visible = true
+          model.getHtml().cssObject.visible = true
           infoBox.newText("")
         }, 2000)
 
@@ -146,7 +152,7 @@ const raycastClick = (event) => {
         camMoving = true
         camTargeting = true
         camMovePos.set(1.5, 0.5, 0)
-        camMoveTarget.set(0, 0.25, 0)
+        camMoveTarget.set(0, 0.25, 0.5)
         controls.enableRotate = false
       }
     }
@@ -156,6 +162,13 @@ const raycastClick = (event) => {
         const lastDigit = parseInt(lastChar, 10)
         //console.log(lastDigit)
         updateSafeButtons(lastDigit)
+      }
+    }
+    else if (iObject.name == "Doom") {
+      if (stage == "safe") {
+        infoBox.newText("An old copy of Doom? Why would this be here? Try running it on that computer.")
+        model.getHtml().setDoomCopy(true)
+        iObject.visible = false
       }
     }
   }
@@ -190,13 +203,18 @@ function animate() {
 
   if (model) {
     model.updateMixer(delta)
+
+    if (safeDoorOpen) {
+      model.getSafeDoor().rotation.y -= delta
+    }
   }
 
   if (returnButton && returnButton.getReturnFlag()) {
     // Return to idle
     returnButton.setReturnFlag(false)
 
-    model.getHtml().visible = false
+    //model.getHtml().goToPage("desktop")
+    model.getHtml().cssObject.visible = false
     model.playAnimationByName("idle")
     stage = "idle"
 
