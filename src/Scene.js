@@ -64,7 +64,7 @@ export function Controls(camera, renderer) {
   return controls
 }
 
-export function LoadModel(scene) {
+export function LoadModel(scene, infoBox) {
   let mixer
   let model
   let animations
@@ -72,6 +72,7 @@ export function LoadModel(scene) {
 
   let agent
   let html
+  let safeButtons = []
 
   const loader = new GLTFLoader()
   loader.load(glb, function (gltf) {
@@ -113,10 +114,19 @@ export function LoadModel(scene) {
     scene.getObjectByName("Monitor").children.forEach(child => {
       if (child.material.name == "screen") {
         child.layers.set(1)
-        html = Html(child)
+        html = Html(child, infoBox)
         html.visible = false
       }
     })
+
+    scene.getObjectByName("SafeDoor").layers.set(1)
+
+    scene.getObjectByName("Keypad").children.forEach( (button) => {
+      if (button.name.includes("SafeButton00")) {
+        safeButtons.push(button)
+        button.layers.set(1)
+      }
+    } )
   })
 
   const playAnimationByName = (animationName) => {
@@ -136,7 +146,7 @@ export function LoadModel(scene) {
   }
 
   const initializeAnimations = () => {
-    const oneShots = ["drop"]
+    const oneShots = ["drop", "toSafe"]
     oneShots.forEach( shot => {
       const action = mixer.clipAction(THREE.AnimationClip.findByName(animations, shot))
       action.loop = THREE.LoopOnce
@@ -146,6 +156,7 @@ export function LoadModel(scene) {
     mixer.addEventListener('finished', () => {
       //console.log("Animation finished", lastAnim)
       if (lastAnim._clip.name == "drop") playAnimationByName("idle")
+      else if (lastAnim._clip.name == "toSafe") playAnimationByName("idleSafe")
     })
   }
 
@@ -169,8 +180,15 @@ export function LoadModel(scene) {
     return html
   }
 
-  return { getHtml, getModel, updateMixer, playAnimationByName }
+  const updateSafeButtons = (combo) => {
+    if (!safeButtons) return
+    safeButtons.forEach( (button, index) => {
+      if (combo[index]) button.material.color.g = 1
+      else button.material.color.g = 0.3
+    })
+  }
 
+  return { getHtml, getModel, updateMixer, playAnimationByName, updateSafeButtons }
 }
 
 export function moveCamera(camera, targetPosition, alpha) {

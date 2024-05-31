@@ -14,8 +14,6 @@ const controls = Controls(camera, renderer)
 
 Lighting(scene)
 
-const model = LoadModel(scene)
-
 const clock = new THREE.Clock(true)
 
 const hitBox = new THREE.Mesh(
@@ -33,6 +31,8 @@ hitBox.layers.set(1)
 scene.add(hitBox)
 
 const infoBox = InfoBox(app)
+
+const model = LoadModel(scene, infoBox)
 
 let stage = "start"
 let camMoving = false
@@ -56,6 +56,28 @@ Briefing(app, bgm)
 
 const muted = Mute(app)
 const returnButton = Return(app)
+
+const safeButtons = [false,false,false,false,false,false,false,false,false]
+
+const updateSafeButtons = (button) => {
+  safeButtons[button] = !safeButtons[button]
+
+  if (!model) return
+  model.updateSafeButtons(safeButtons)
+
+  const correctCombination = [true, false, true, false, true, true, false, false, true]
+  if (arraysEqual(correctCombination, safeButtons)) {
+    console.log("Safe Open")
+  }
+}
+
+const arraysEqual = (arr1, arr2) => {
+  if (arr1.length !== arr2.length) return false
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) return false
+  }
+  return true
+}
 
 // Click raycasters
 const raycastClick = (event) => {
@@ -81,18 +103,16 @@ const raycastClick = (event) => {
       if (stage == "start") {
         setTimeout(()=>{
           infoBox.newText("Click and drag to look around.")
-        }, [7000])
+        }, [3000])
         infoBox.newText("His file should be on that computer.")
         model.playAnimationByName("drop")
         stage = "idle"
 
         camMoving = true
         camTargeting = true
-        camMovePos.set(1.5, 2, 1.5)
+        camMovePos.set(1.5, 2, -1.5)
         camMoveTarget.set(0, 1, 0)
-        //camMoveQuaternion.setFromEuler(camMoveEuler.set(0,0,0))
-
-        //console.log(controls)
+        
         controls.enableRotate = false
         controls.minPolarAngle = Math.PI * 1 / 4
         controls.maxPolarAngle = Math.PI * 2.2 / 4
@@ -104,7 +124,7 @@ const raycastClick = (event) => {
         stage = "computer"
         setTimeout(()=>{
           model.getHtml().visible = true
-          infoBox.newText("Click and drag outside the monitor to look around.")
+          infoBox.newText("")
         }, 2000)
 
         returnButton.showReturn()
@@ -114,6 +134,28 @@ const raycastClick = (event) => {
         camMovePos.set(0, 1.3, 0)
         camMoveTarget.set(0, 1.3, 0.5)
         controls.enableRotate = false
+      }
+    }
+    else if (iObject.name == "SafeDoor") {
+      if (stage == "idle") {
+        model.playAnimationByName("toSafe")
+        stage = "safe"
+
+        returnButton.showReturn()
+
+        camMoving = true
+        camTargeting = true
+        camMovePos.set(1.5, 0.5, 0)
+        camMoveTarget.set(0, 0.25, 0)
+        controls.enableRotate = false
+      }
+    }
+    else if (iObject.name.includes("SafeButton00")) {
+      if (stage == "safe") {
+        const lastChar = iObject.name.slice(-1)
+        const lastDigit = parseInt(lastChar, 10)
+        //console.log(lastDigit)
+        updateSafeButtons(lastDigit)
       }
     }
   }
@@ -160,7 +202,7 @@ function animate() {
 
     camMoving = true
     camTargeting = true
-    camMovePos.set(1.5, 2, 1.5)
+    camMovePos.set(1.5, 2, -1.5)
     camMoveTarget.set(0, 1, 0)
     
     controls.enableRotate = false
